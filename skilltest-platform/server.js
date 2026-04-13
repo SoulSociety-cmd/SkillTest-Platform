@@ -36,7 +36,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.use('/api/auth', require('./routes/ auth'));
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tests', require('./routes/tests'));
 app.use('/api/submissions', require('./routes/submissions'));
 app.use('/api/users', require('./routes/users'));
@@ -89,7 +89,9 @@ let PORT = process.env.PORT || 5000;
 function startServer(port) {
   server.listen(port)
     .on('listening', () => {
-      console.log(`🚀 TEST ENGINE Server running on http://localhost:${port}`);
+      const actualPort = server.address().port;
+
+      console.log(`🚀 TEST ENGINE Server running on http://localhost:${actualPort}`);
       console.log(`📡 Socket.IO ready for real-time grading`);
       console.log(`🧪 Sandbox ready: POST /api/submissions/code`);
     })
