@@ -1,57 +1,63 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import CreateTest from './pages/CreateTest'
 import TakeTest from './pages/TakeTest'
 import TestResults from './pages/TestResults'
 import Navbar from './components/Navbar'
-import { api } from './utils/api'
+import Profile from './pages/Profile'
+import CompanyDashboard from './pages/CompanyDashboard'
+import useAuthStore from './stores/authStore'
+import { useTestStore } from './stores/testStore'
+import { useThemeStore } from './stores/themeStore'
 
 function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  const { user, loading: authLoading, init } = useAuthStore()
+  const { initTheme } = useThemeStore()
+  const { fetchDashboardData } = useTestStore()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      api.get('/users/me')
-        .then(res => setUser(res.data))
-        .catch(() => {
-          localStorage.removeItem('token')
-          navigate('/login')
-        })
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
-    }
-  }, [navigate])
+    init()
+    initTheme()
+  }, [init, initTheme])
 
-  const logout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    navigate('/login')
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData(user.role)
+    }
+  }, [user, fetchDashboardData])
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    )
   }
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>
-
   return (
-    <div className="min-h-screen bg-gray-50">
-{user && <Navbar user={user} onLogout={logout} />}
-      <Routes>
-        <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/dashboard" />} />
-        <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-{user?.role === 'company' && (
-  <>
-    <Route path="/create-test" element={<CreateTest />} />
-  </>
-)}
-        <Route path="/test/:testId" element={user ? <TakeTest user={user} /> : <Navigate to="/login" />} />
-        <Route path="/results/:submissionId" element={user ? <TestResults /> : <Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
-      </Routes>
-    </div>
+    <>
+      <div className={`min-h-screen ${user ? 'bg-bg-primary' : ''}`}>
+        {user && <Navbar />}
+        <div className="glass-container">
+          <Routes>
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+            {user?.role === 'company' && (
+              <>
+                <Route path="/company-dashboard" element={<CompanyDashboard />} />
+                <Route path="/create-test" element={<CreateTest />} />
+              </>
+            )}
+            <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+            <Route path="/test/:testId" element={user ? <TakeTest /> : <Navigate to="/login" />} />
+            <Route path="/results/:submissionId" element={user ? <TestResults /> : <Navigate to="/login" />} />
+            <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
+          </Routes>
+        </div>
+      </div>
+    </>
   )
 }
 
