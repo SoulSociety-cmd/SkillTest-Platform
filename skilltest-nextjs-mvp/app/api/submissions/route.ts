@@ -1,42 +1,46 @@
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import { Submission, User } from '@/lib/models'
-import { gradeCalculator } from '@/lib/grader'
+import { productionGrade } from '@/lib/productionGrader'
 
 export async function POST(req: Request) {
   try {
     await connectDB()
     const body = await req.json()
     
-    const { testId, code, userId } = body
+    const { testId, code, userId, language = 'js' } = body
     
-    // Grade code
-    const gradeResult = await gradeCalculator(code)
+    // Production grade
+    const gradeResult = await productionGrade(testId as any, code, language)
     
     // Save submission
     const submission = new Submission({
       userId,
       testId,
       code,
+      language,
       score: gradeResult.score,
-      results: gradeResult.results,
-      timeTaken: 900 - body.timeLeft || 900, // 15min max
+      results: gradeResult,
+      timeTaken: 900 - body.timeLeft || 900,
     })
     await submission.save()
     
-    // Update user score/badge
+    // Update user
+    const currentScore = (await User.findById(userId))?.score || 0;
+    const badge = gradeResult.score >= 70 ? 'Production Ready Dev 🚀' : 'Keep Grinding 💪';
     await User.findByIdAndUpdate(userId, {
-      score: Math.max(gradeResult.score, (await User.findById(userId))?.score || 0),
-      badge: gradeResult.score >= 70 ? 'Junior JS Ready ✅' : 'Keep Practicing 💪',
+      score: Math.max(gradeResult.score, currentScore),
+      badge,
     })
     
     return NextResponse.json({ 
       id: submission._id,
       ...gradeResult,
-      badge: gradeResult.score >= 70 ? 'Junior JS Ready ✅' : 'Keep Practicing 💪',
+      badge
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Grading failed' }, { status: 500 })
+    console.error('Production grading failed:', error);
+    return NextResponse.json({ error: 'Production grading failed' }, { status: 500 })
   }
 }
 

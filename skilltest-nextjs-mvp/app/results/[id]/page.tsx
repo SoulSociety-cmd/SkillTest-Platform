@@ -7,15 +7,14 @@ import { CheckCircle, Download, Share2 } from 'lucide-react'
 
 interface TestResult {
   score: number
-  passed: number
-  total: number
-  results: Array<{
-    passed: boolean
-    input: [number, string, number]
-    expected: number
-    output?: number
-  }>
+  unitPassed?: number
+  unitTotal?: number
+  playwrightPassed?: number
+  eslintScore?: number
+  aiBonus?: number
+  feedback?: string
   badge: string
+  results?: any
 }
 
 export default function ResultsPage() {
@@ -54,13 +53,13 @@ export default function ResultsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Score Header */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-12 mb-12 text-center">
-          <div className={`inline-flex items-center px-12 py-8 rounded-3xl shadow-2xl mb-8 ${
+  <div className={`inline-flex items-center px-12 py-8 rounded-3xl shadow-2xl mb-8 ${
             scorePercent >= 70 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-orange-500 to-red-600'
           } text-white`}>
             <CheckCircle className="w-16 h-16 mr-6" />
             <div>
               <div className="text-6xl font-black">{scorePercent}%</div>
-              <div className="text-2xl opacity-90">{result.passed}/{result.total} tests</div>
+              <div className="text-2xl opacity-90">Production Grade</div>
             </div>
           </div>
           
@@ -70,28 +69,32 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Test Cases */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {result.results.map((r, i) => (
-            <div key={i} className={`p-6 rounded-2xl shadow-xl ${
-              r.passed 
-                ? 'bg-emerald-50 border-4 border-emerald-200' 
-                : 'bg-red-50 border-4 border-red-200'
-            }`}>
-              <div className={`text-3xl mb-4 ${r.passed ? 'text-emerald-600' : 'text-red-600'}`}>
-                {r.passed ? '✅' : '❌'}
-              </div>
-              <div className="font-mono text-lg mb-4 p-4 bg-white rounded-xl">
-                <code>{r.input.join(' ')} = {r.expected}</code>
-              </div>
-              {r.output !== undefined && (
-                <div className="text-sm text-gray-600">
-                  Your output: <code>{r.output}</code>
-                </div>
-              )}
-            </div>
-          ))}
+        {/* Production Breakdown */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="p-8 bg-emerald-50 rounded-3xl border-2 border-emerald-200 text-center">
+            <div className="text-3xl font-bold text-emerald-700">{result.unitPassed || 0}/{result.unitTotal || 0}</div>
+            <div className="text-emerald-600 font-semibold mt-1">Unit Tests</div>
+          </div>
+          <div className="p-8 bg-blue-50 rounded-3xl border-2 border-blue-200 text-center">
+            <div className="text-3xl font-bold text-blue-700">{result.playwrightPassed || 0}</div>
+            <div className="text-blue-600 font-semibold mt-1">E2E Tests</div>
+          </div>
+          <div className="p-8 bg-purple-50 rounded-3xl border-2 border-purple-200 text-center">
+            <div className="text-3xl font-bold text-purple-700">{result.eslintScore || 0}%</div>
+            <div className="text-purple-600 font-semibold mt-1">Code Quality</div>
+          </div>
+          <div className="p-8 bg-indigo-50 rounded-3xl border-2 border-indigo-200 text-center">
+            <div className="text-3xl font-bold text-indigo-700">+{result.aiBonus || 0}</div>
+            <div className="text-indigo-600 font-semibold mt-1">AI Review</div>
+          </div>
         </div>
+
+        {result.feedback && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-3xl p-8 mb-12">
+            <h3 className="text-2xl font-bold text-indigo-900 mb-4">🤖 AI Code Review</h3>
+            <p className="text-lg leading-relaxed whitespace-pre-wrap">{result.feedback}</p>
+          </div>
+        )}
 
         {/* Matching */}
         <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl p-12 mb-12">

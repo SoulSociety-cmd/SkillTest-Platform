@@ -6,6 +6,7 @@ import { useState } from 'react'
 interface MonacoEditorProps {
   value: string
   onChange: (value: string) => void
+  language?: string
   height?: string
 }
 
@@ -14,7 +15,7 @@ export default function MonacoEditor({ value, onChange, height = '500px' }: Mona
     <div className="border-2 border-dashed border-gray-300 rounded-2xl p-1 hover:border-blue-400 transition-all bg-gradient-to-b from-gray-50 to-white">
       <Editor
         height={height}
-        defaultLanguage="javascript"
+        language={language || 'javascript'}
         theme="vs-dark"
         value={value}
         onChange={onChange as any}

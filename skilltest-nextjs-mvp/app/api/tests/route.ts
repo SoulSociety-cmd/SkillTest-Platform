@@ -2,41 +2,32 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import { Test } from '@/lib/models'
 
-// Sample Calculator Test
-const CALCULATOR_TEST = {
-  id: 'calculator-basic',
-  title: 'Build a Calculator Function',
-  description: `Write a \`calculate(a, op, b)\` function that:
-• Supports +, -, *
-• Returns number result
-• 15min timer`,
-  testCases: [
-    { input: [2, '+', 2], expected: 4 },
-    { input: [5, '-', 3], expected: 2 },
-    { input: [4, '*', 3], expected: 12 },
-  ],
-}
+import { TEST_CASES } from '@/lib/testCases';
+
+const SAMPLE_TESTS = Object.values(TEST_CASES).map(test => ({
+  id: test.id,
+  title: test.title,
+  description: `Production test for ${test.language.toUpperCase()}. ${test.testCases.length} test cases.`,
+  language: test.language,
+  testCases: test.testCases,
+} as any));
 
 export async function GET() {
-  await connectDB()
+  await connectDB();
   
-  // Create sample test if not exists
-  let test = await Test.findOne({ id: CALCULATOR_TEST.id })
-  if (!test) {
-    test = new Test(CALCULATOR_TEST)
-    await test.save()
-  }
+  // Return all available tests
+  const tests = Object.values(SAMPLE_TESTS);
   
-  return NextResponse.json(test)
+  return NextResponse.json(tests);
 }
 
 export async function POST(req: Request) {
-  await connectDB()
-  const body = await req.json()
+  await connectDB();
+  const body = await req.json();
   
-  // Create user test submission
-  const test = new Test({ ...CALCULATOR_TEST, ...body })
-  await test.save()
+  // Create custom test
+  const test = new Test(body);
+  await test.save();
   
-  return NextResponse.json(test)
+  return NextResponse.json(test);
 }

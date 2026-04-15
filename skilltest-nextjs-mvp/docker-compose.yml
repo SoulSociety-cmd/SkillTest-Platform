@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: skilltest-mongo
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: skilltest
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - skilltest-net
+
+  sandbox:
+    build:
+      context: ./sandbox
+      dockerfile: Dockerfile
+    container_name: skilltest-sandbox
+    ports:
+      - "3001:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # for nested Docker if needed
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+    networks:
+      - skilltest-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skilltest-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://root:skilltest@mongo:27017/skilltest?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEXTAUTH_SECRET=your-super-secret-key-change-me
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - mongo
+      - sandbox
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - skilltest-net
+
+volumes:
+  mongo_data:
+
+networks:
+  skilltest-net:
+    driver: bridge
+

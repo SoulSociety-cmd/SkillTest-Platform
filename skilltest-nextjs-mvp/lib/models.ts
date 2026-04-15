@@ -48,6 +48,7 @@ export interface ISubmission extends mongoose.Document {
 const submissionSchema = new Schema<ISubmission>({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   testId: { type: String },
+  language: { type: String, default: 'js' },
   code: String,
   score: Number,
   results: Object,

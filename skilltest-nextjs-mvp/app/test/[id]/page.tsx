@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from 'react'
 import MonacoEditor from '@/components/MonacoEditor'
 import TestTimer from '@/components/TestTimer'
+import ProgressGrader from '@/components/ProgressGrader'
 import { Button } from '@/components/ui/button'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
-import { gradeCalculator } from '@/lib/grader'
-import { Play, CheckCircle, Clock } from 'lucide-react'
+import { TEST_CASES } from '@/lib/testCases'
+import { Play, CheckCircle, Clock, Code2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function TestPage() {
   const [code, setCode] = useState('function calculate(a, op, b) {\n  // Your code here\n  // Support +, -, *\n  // Return the result\n}')
@@ -21,6 +23,10 @@ export default function TestPage() {
   const params = useParams()
   
   const testId = params.id as string
+  const testCase = TEST_CASES[testId as keyof typeof TEST_CASES];
+  const [language, setLanguage] = useState(testCase?.language || 'js')
+  const [showProductionGrader, setShowProductionGrader] = useState(false)
+  const [submissionId, setSubmissionId] = useState('')
 
   // Timer logic
   useEffect(() => {
@@ -45,27 +51,28 @@ export default function TestPage() {
     router.push(`/results/${submissionId}`)
   }
 
-  const handleGrade = async () => {
+  const handleQuickGrade = async () => {
     setIsSubmitting(true)
     try {
-      const gradeResult = await gradeCalculator(code)
-      setResults(gradeResult)
+      // Quick vm2 grade for calculator only
+      const quickResult = await gradeCalculator(code)
+      setResults(quickResult)
     } catch (error) {
-      console.error('Grading error', error)
+      console.error('Quick grading error', error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const submitTest = async () => {
-    // Simulate submission to /api/submissions
+  const submitQuickTest = async () => {
     const res = await fetch('/api/submissions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         testId, 
         code, 
-        score: results?.score || 0,
+        language,
+        timeLeft,
         userId: session?.user?.id 
       })
     })
