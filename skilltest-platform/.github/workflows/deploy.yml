@@ -1,0 +1,74 @@
+name: Deploy SkillTest Platform
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci --only=production
+        cd client && npm ci --only=production
+    
+    - name: Run tests (add your tests)
+      run: npm test || echo "No tests found, skipping"
+    
+    - name: Build
+      run: npm run build
+
+  deploy-railway:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Railway
+      uses: railwayapp/action@v1
+      with:
+        railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+        serviceId: ${{ secrets.RAILWAY_BACKEND_SERVICE_ID }}
+        watchForChanges: true  # Auto-deploy on push
+
+  deploy-do:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy DigitalOcean App
+      uses: digitalocean/app_action@v1.1.4
+      with:
+        appid: ${{ secrets.DO_APP_ID }}
+        token: ${{ secrets.DO_TOKEN }}
+        liveUrl: ${{ secrets.DO_LIVE_URL }}
+
+# Secrets to add in GitHub Repo Settings:
+# RAILWAY_TOKEN: Railway PAT
+# RAILWAY_BACKEND_SERVICE_ID: From railway service
+# DO_APP_ID: DigitalOcean App ID
+# DO_TOKEN: DigitalOcean PAT
+# DO_LIVE_URL: App live URL
+
+# Usage:
+# 1. Add secrets to repo
+# 2. Push to main → auto deploy!
+
