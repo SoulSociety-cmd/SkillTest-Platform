@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   const revenueData = await Submission.aggregate([
     { $match: { companyId } },
     {
-      $lookup: {
+    $lookup: {
         from: 'tests',
         localField: 'testId',
         foreignField: '_id',
