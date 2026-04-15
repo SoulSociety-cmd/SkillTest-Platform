@@ -1,10 +1,15 @@
-import createNextSentryPlugin from '@sentry/nextjs';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
   experimental: {
-    serverComponentsExternalPackages: ['mongoose', 'vm2', '@upstash/redis'],
+    serverComponentsExternalPackages: [
+      'mongoose',
+      'vm2',
+      '@upstash/redis',
+    ],
   },
+
   images: {
     remotePatterns: [
       {
@@ -17,10 +22,6 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'sentry.io',
-      },
-      {
-        protocol: 'https',
         hostname: '**.posthog.com',
       },
       {
@@ -29,16 +30,12 @@ const nextConfig = {
       },
     ],
   },
-  transpilePackages: [],
-  swcMinify: true,
-  output: 'standalone',
-  sentry: createNextSentryPlugin({
-    silent: true,
-    org: 'skilltest',
-    project: 'skilltest-nextjs',
-  }),
-};
 
-const sentryWebpackPlugin = require('@sentry/webpack-plugin');
+  transpilePackages: [],
+
+  swcMinify: true,
+
+  output: 'standalone',
+};
 
 export default nextConfig;
