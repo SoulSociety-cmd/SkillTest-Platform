@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build",
+    "dev": "concurrently \"npm run dev --prefix client\" \"node server.js\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
