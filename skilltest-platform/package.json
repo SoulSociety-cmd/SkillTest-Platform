@@ -1,26 +1,12 @@
 {
   "name": "skilltest-platform",
   "version": "1.0.0",
-  "description": "SkillTest Platform - Connect companies with students through real skill tests",
+  "description": "SkillTest Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "nodemon server.js",
-    "client": "cd client && npx vite",
-    "build": "cd client && npx vite build",
-    "preview": "cd client && npx vite preview",
-    "install-all": "npm install && cd client && npm install",
-    "sandbox": "docker-compose -f docker-compose-sandbox.yml up -d"
+    "build": "cd client && npm install && npm run build"
   },
-  "keywords": [
-    "skilltest",
-    "assessment",
-    "coding-test",
-    "hiring"
-  ],
-  "author": "Senior Fullstack Developer",
-  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "concurrently": "^8.2.2",
@@ -41,8 +27,5 @@
     "socket.io": "^4.8.3",
     "tree-kill": "^1.2.2",
     "vm2": "^3.9.19"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.4"
   }
 }
