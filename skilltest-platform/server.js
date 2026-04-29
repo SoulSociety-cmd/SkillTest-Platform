@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
 const { Server } = require('socket.io');
+const portfinder = require("portfinder"); // ✅ thêm dòng này
 const { authLimiter, apiLimiter } = require('./middleware/rateLimit');
 
 // Models
@@ -100,7 +101,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// ===== Index tối ưu =====
+
 mongoose.connection.on('connected', async () => {
   try {
     await User.collection.createIndex({ email: 1 }, { unique: true });
@@ -122,9 +123,15 @@ mongoose.connection.on('connected', async () => {
 });
 
 // ===== Start Server =====
-const PORT = process.env.PORT || 5000;
+const DEFAULT_PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 Socket.IO ready`);
-});
+portfinder.getPortPromise({ port: DEFAULT_PORT })
+  .then((port) => {
+    server.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}`);
+      console.log(`📡 Socket.IO ready`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Cannot find available port:", err);
+  });
